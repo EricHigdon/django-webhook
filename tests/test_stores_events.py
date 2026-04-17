@@ -95,6 +95,6 @@ def test_clear_webhook_events():
         created=now - timedelta(days=5)
     )
 
-    clear_webhook_events()
+    clear_webhook_events.delay()
     assert WebhookEvent.objects.count() == 1
     assert WebhookEvent.objects.get() == retained_event
