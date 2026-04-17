@@ -68,6 +68,7 @@ class SignalListener:
                 webhook_uuid=str(uuid),
             )
             payload = json.dumps(payload_dict, cls=encoder_cls)
+
             fire_webhook.delay(
                 id,
                 payload,

@@ -25,6 +25,7 @@ class WebhookFactory(factory.django.DjangoModelFactory):
     secrets = factory.RelatedFactory(
         WebhookSecretFactory, factory_related_name="webhook"
     )
+    uuid = factory.Faker("uuid4")
 
     @factory.post_generation
     def topics(self, create, extracted, **kwargs):

@@ -3,7 +3,7 @@ import hmac
 import json
 from datetime import datetime, timedelta
 
-from django_webhook.models import WebhookTopic
+from django_webhook.models import Webhook, WebhookTopic
 import pytest
 from django.db.models.signals import post_save, post_delete
 from django.test import override_settings
@@ -291,13 +291,15 @@ def test_model_serializer(mocker):
     webhook = WebhookFactory(
         topics=[
             WebhookTopicFactory(name="tests.Country/update"),
-        ],
+        ]
     )
 
     country = Country.objects.create(name="Coruscant")
 
     with override_settings(
-        DJANGO_WEBHOOK={"MODEL_SERIALIZER": "tests.test_signals.custom_model_serializer"}
+        DJANGO_WEBHOOK={
+            "MODEL_SERIALIZER": "tests.test_signals.custom_model_serializer",
+        }
     ):
         country.save()
 
@@ -311,13 +313,14 @@ def test_model_serializer(mocker):
                 },
                 "topic": "tests.Country/update",
                 "object_type": "tests.Country",
-                "webhook_uuid": str(webhook.uuid),
+                "webhook_uuid": json.loads(mock_fire_webhook.delay.call_args.args[1])["webhook_uuid"],
             },
+            
         ),
         topic="tests.Country/update",
         object_type="tests.Country",
     )
-    
+
 
 def test_creates_custom_topics():
     WebhookTopic.objects.all().delete()

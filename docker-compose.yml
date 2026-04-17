@@ -6,10 +6,11 @@ services:
     ports:
       - "8000:8000"
     environment:
-      DJANGO_SETTINGS_MODULE: tests.settings.local
+      DJANGO_SETTINGS_MODULE: tests.settings.test
     volumes:
       - ./tests:/app/tests
       - ./django_webhook:/app/django_webhook
+      - .:/app
 
   webhook_worker:
     <<: *defaults
