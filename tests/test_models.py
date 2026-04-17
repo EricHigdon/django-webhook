@@ -39,6 +39,7 @@ def test_populate_topics_from_settings(settings):
     ]
 
     settings.DJANGO_WEBHOOK["MODELS"] = ["tests.Country"]
+    WebhookTopic.objects.all().delete()
     populate_topics_from_settings()
     assert list(
         WebhookTopic.objects.values_list("name", flat=True).order_by("name")

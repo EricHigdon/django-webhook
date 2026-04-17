@@ -51,27 +51,24 @@ class SignalListener:
                 WebhookTopic.objects.get_or_create(name=topic)
                 
             topic_names = topic_names.union(set(instance_webhook_topics))
-        webhook_ids = _find_webhooks(topic_names)
+        webhook_ids = _find_webhooks(frozenset(topic_names))
         logger.info(f"Found {len(webhook_ids)} webhooks for topics: {topic_names}")
         encoder_cls = get_settings()["PAYLOAD_ENCODER_CLASS"]
 
-        for id, uuid in webhook_ids:
-            for topic_name in Webhook.topics.through.objects.filter(webhook_id=id, webhooktopic__name__in=topic_names).values_list(
-                "webhooktopic__name", flat=True
-            ):
-                payload_dict = dict(
-                    object=model_dict(instance),
-                    topic=topic_name,
-                    object_type=self.model_label,
-                    webhook_uuid=str(uuid),
-                )
-                payload = json.dumps(payload_dict, cls=encoder_cls)
-                fire_webhook.delay(
-                    id,
-                    payload,
-                    topic=topic_name,
-                    object_type=self.model_label,
-                )
+        for id, uuid, topic_name in webhook_ids:
+            payload_dict = dict(
+                object=model_dict(instance),
+                topic=topic_name,
+                object_type=self.model_label,
+                webhook_uuid=str(uuid),
+            )
+            payload = json.dumps(payload_dict, cls=encoder_cls)
+            fire_webhook.delay(
+                id,
+                payload,
+                topic=topic_name,
+                object_type=self.model_label,
+            )
 
     def connect(self):
         self.signal.connect(
@@ -143,6 +140,6 @@ def _query_webhooks_cached(topic_names: list[str]):
 
 
 def _query_webhooks(topic_names: list[str]):
-    return Webhook.objects.filter(active=True, topics__name__in=topic_names).distinct().values_list(
-        "id", "uuid"
+    return Webhook.objects.filter(active=True, topics__name__in=topic_names).values_list(
+        "id", "uuid", "topics__name"
     )

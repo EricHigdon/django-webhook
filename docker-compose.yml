@@ -1,5 +1,6 @@
 services:
   webhook_server: &defaults
+    image: django-webhook
     build:
       context: .
     ports:
@@ -44,6 +45,14 @@ services:
       - "8002:8002"
     volumes:
       - ./examples/flask:/app/
+
+  test:
+    <<: *defaults
+    command: pytest --ignore .poetry --cov
+    volumes:
+      - .:/app
+    profiles:
+      - test
 
 volumes:
   pgdata:
