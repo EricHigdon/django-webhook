@@ -58,7 +58,7 @@ class SignalListener:
                 
             topic_names = topic_names.union(set(instance_webhook_topics))
         webhook_ids = _find_webhooks(frozenset(topic_names))
-        logger.info(f"Found {len(webhook_ids)} webhooks for topics: {topic_names}")
+        logger.debug(f"Found {len(webhook_ids)} webhooks for topics: {topic_names}")
 
         for id, uuid, topic_name in webhook_ids:
             payload_dict = dict(
